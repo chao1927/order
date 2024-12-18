@@ -5,3 +5,6 @@
 /executor/target/
 /infra/target/
 /web/target/
+/.idea/
+/logs/
+/*.iml
