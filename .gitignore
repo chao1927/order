@@ -1,0 +1,7 @@
+# Project exclude paths
+/application/target/
+/common/target/
+/domain/target/
+/executor/target/
+/infra/target/
+/web/target/
