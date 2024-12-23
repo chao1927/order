@@ -1,0 +1,2 @@
+2024-12-18 19:11:04 [ERROR] org.order.executor.cache.data.DataCache - No results for path:$.aobj[0].nonExistent
+com.jayway.jsonpath.PathNotFoundException: No results for path: $['aobj'][0]['nonExistent']

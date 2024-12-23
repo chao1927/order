@@ -123,4 +123,12 @@ public class VersionEntry {
         this.flowVersion = flowVersion;
         this.version = version;
     }
+
+    public boolean isActive() {
+        return StatusEnum.isActive(this.status);
+    }
+
+    public boolean isInactive() {
+        return StatusEnum.isInactive(this.status);
+    }
 }

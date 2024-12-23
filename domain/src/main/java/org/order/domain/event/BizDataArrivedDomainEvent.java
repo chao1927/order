@@ -25,8 +25,4 @@ public class BizDataArrivedDomainEvent implements DomainEvent {
         return DomainEventEnum.BIZ_DATA_ARRIVED_EVENT;
     }
 
-    public Integer getEventType() {
-        return domainEvent().getCode();
-    }
-
 }

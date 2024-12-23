@@ -12,10 +12,9 @@
     <artifactId>common</artifactId>
      <version>1.0.1</version>
 
-    <dependencies>
+    <dependencies><!-- Lombok -->
 
 
-        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

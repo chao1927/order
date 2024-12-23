@@ -119,8 +119,11 @@ public enum ErrorCode {
 
     RULE_ITEM_TYPE_ERROR(5201, "rule item type error."),
 
-    PARAM_NOT_ACTIVE(5101, "param not active.");
+    PARAM_NOT_ACTIVE(5101, "param not active."),
 
+
+
+    WRITE_VALUE_ERROR(5101, "write value error.");
 
     private final Integer code;
     private final String message;

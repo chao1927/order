@@ -100,4 +100,12 @@ public class VersionFlow {
         this.description = description;
         this.version = version;
     }
+
+    public boolean isActive() {
+        return StatusEnum.isActive(this.status);
+    }
+
+    public boolean isInactive() {
+        return StatusEnum.isInactive(this.status);
+    }
 }
