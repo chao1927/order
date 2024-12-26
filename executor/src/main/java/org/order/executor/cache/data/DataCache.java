@@ -25,23 +25,23 @@ public class DataCache {
 
     private ReentrantLock lock = new ReentrantLock();
 
-    private volatile String taskId;
+    private volatile String bizId;
 
     private volatile JSONObject data;
 
 
-    public DataCache(String taskId, String data) {
-        this.taskId = taskId;
+    public DataCache(String bizId, String data) {
+        this.bizId = bizId;
         this.data = JSON.parseObject(data);
     }
 
-    public DataCache(String taskId, Object data) {
-        this.taskId = taskId;
+    public DataCache(String bizId, Object data) {
+        this.bizId = bizId;
         this.data = JSON.parseObject(JSON.toJSONString(data));
     }
 
-    public String taskId() {
-        return this.taskId;
+    public String bizId() {
+        return this.bizId;
     }
 
     public String data() {

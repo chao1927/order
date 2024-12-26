@@ -1,5 +1,6 @@
 package org.order.domain.repository;
 
+import org.order.common.enums.RuleItemTypeEnum;
 import org.order.domain.entity.RuleItem;
 
 import java.util.List;
@@ -20,5 +21,13 @@ public interface RuleItemRepository extends BaseRepository<RuleItem, Long> {
 
     Optional<List<RuleItem>> findByRuleId(Long ruleId);
 
+    List<RuleItem> findRuleItemsByRuleIdWithEx(Long ruleId);
+
     void deleteByRuleId(Long ruleId);
+
+    void checkRefByRule(RuleItemTypeEnum type, Long refId);
+
+    void checkRefByRule(RuleItemTypeEnum type, Long refId, Integer refVersion);
+
+    void checkRuleItemActive(List<RuleItem> items);
 }

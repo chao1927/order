@@ -17,4 +17,8 @@ public interface VersionFlowRepository extends BaseRepository<VersionFlow, Long>
     Optional<VersionFlow> findByFlowIdAndVersion(Long flowId, Integer version);
 
     Optional<List<VersionFlow>> findByFlowId(Long flowId);
+
+    VersionFlow findByFlowIdAndVersionWithEx(Long flowId, Integer version);
+
+    void checkFlowActive(Long flowId, Integer version);
 }

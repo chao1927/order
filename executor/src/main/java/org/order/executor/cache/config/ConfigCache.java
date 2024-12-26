@@ -1,5 +1,7 @@
 package org.order.executor.cache.config;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -47,6 +49,14 @@ public class ConfigCache<T extends IdAndVersion> {
         }
 
         return versionCache.get(version);
+    }
+
+    public List<T> getAllList() {
+        List<T> result = new ArrayList<>();
+        for (Map<Integer, T> versionCache : cache.values()) {
+            result.addAll(versionCache.values());
+        }
+        return result;
     }
 
 }

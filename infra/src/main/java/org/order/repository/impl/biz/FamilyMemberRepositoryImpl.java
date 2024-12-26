@@ -23,7 +23,7 @@ public class FamilyMemberRepositoryImpl extends BaseRepositoryImpl<FamilyMember,
     private FamilyMemberDao familyMemberDao;
 
     @Override
-    public Optional<FamilyMember> findByBizInfoId(Long bizInfoId) {
+    public Optional<List<FamilyMember>> findByBizInfoId(Long bizInfoId) {
         return familyMemberDao.findByBizInfoId(bizInfoId);
     }
 }

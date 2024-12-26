@@ -44,4 +44,14 @@ public class VersionRuleConfig implements IdAndVersion {
     public Integer version() {
         return version;
     }
+
+    public VersionRuleConfig(Long id, Long ruleId, String name, String description, String expression, ResultTypeEnum resultType, Integer version) {
+        this.id = id;
+        this.ruleId = ruleId;
+        this.name = name;
+        this.description = description;
+        this.expression = expression;
+        this.resultType = resultType;
+        this.version = version;
+    }
 }

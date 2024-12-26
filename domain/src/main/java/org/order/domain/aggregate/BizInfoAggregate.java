@@ -1,5 +1,6 @@
 package org.order.domain.aggregate;
 
+import com.alibaba.fastjson2.JSON;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,6 +10,7 @@ import org.order.domain.entity.biz.EduExperience;
 import org.order.domain.entity.biz.FamilyMember;
 import org.order.domain.entity.biz.WorkExperience;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,5 +39,14 @@ public class BizInfoAggregate extends BizInfo {
         this.eduExperiences = eduExperiences;
         this.workExperiences = workExperiences;
         this.familyMembers = familyMembers;
+    }
+
+    public BizInfoAggregate(Long id, String name, String idCard, String phone, String bankcard, String orderNo,
+                            Integer source, Date createTime, Date updateTime, Boolean isDeleted) {
+        super(id, name, idCard, phone, bankcard, orderNo, source, createTime, updateTime, isDeleted);
+    }
+
+    public String toData() {
+        return JSON.toJSONString(this);
     }
 }

@@ -14,6 +14,6 @@ import java.util.Optional;
  */
 public interface EduExperienceRepository extends BaseRepository<EduExperience, Long> {
 
-    Optional<EduExperience> findByBizInfoId(Long bizInfoId);
+    Optional<List<EduExperience>> findByBizInfoId(Long bizInfoId);
 
 }

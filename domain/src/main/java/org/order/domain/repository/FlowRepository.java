@@ -10,4 +10,11 @@ import org.order.domain.entity.Flow;
  */
 public interface FlowRepository extends BaseRepository<Flow, Long>, NameRepository<Flow> {
 
+    Flow findByIdWithEx(Long id);
+
+    void checkDuplicateName(String name);
+
+    void checkDuplicateName(String name, Long id);
+
+    void checkFlowExist(Long id);
 }

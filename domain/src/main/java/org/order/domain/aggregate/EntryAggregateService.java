@@ -13,8 +13,7 @@ import org.order.domain.event.DomainEventPublisher;
 import org.order.domain.event.VersionConfigChangeDomainEvent;
 import org.order.domain.repository.EntryRepository;
 import org.order.domain.repository.version.VersionEntryRepository;
-import org.order.domain.repository.wrapper.EntryRepositoryWrapper;
-import org.order.domain.repository.wrapper.FlowRepositoryWrapper;
+import org.order.domain.repository.version.VersionFlowRepository;
 import org.order.domain.validator.ExpressionValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -38,10 +37,7 @@ public class EntryAggregateService {
     private VersionEntryRepository versionEntryRepository;
 
     @Autowired
-    private EntryRepositoryWrapper entryRepositoryWrapper;
-
-    @Autowired
-    private FlowRepositoryWrapper flowRepositoryWrapper;
+    private VersionFlowRepository versionFlowRepository;
 
     @Autowired
     private ExpressionValidator expressionValidator;
@@ -53,7 +49,7 @@ public class EntryAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void create(Entry entry) {
         // 校验是否已有同名入口
-        entryRepositoryWrapper.checkDuplicateName(entry.getName());
+        entryRepository.checkDuplicateName(entry.getName());
 
         // 初始化版本号
         entry.initVersion();
@@ -66,10 +62,10 @@ public class EntryAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void update(Entry entry) {
         // 查询并判断入口是否存在
-        Entry oldEntry = entryRepositoryWrapper.findByIdWithEx(entry.getId());
+        Entry oldEntry = entryRepository.findByIdWithEx(entry.getId());
 
         // 校验是否已有同名入口
-        entryRepositoryWrapper.checkDuplicateName(entry.getName(), entry.getId());
+        entryRepository.checkDuplicateName(entry.getName(), entry.getId());
 
         // 更新入口信息
         oldEntry.change(
@@ -89,7 +85,7 @@ public class EntryAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long entryId) {
         // 校验入口是否存在
-        entryRepositoryWrapper.checkEntryExist(entryId);
+        entryRepository.checkEntryExist(entryId);
 
         // 删除入口
         versionEntryRepository.deleteByEntryId(entryId);
@@ -103,13 +99,13 @@ public class EntryAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void active(Long entryId) {
         // 校验入口是否存在
-        Entry entry = entryRepositoryWrapper.findByIdWithEx(entryId);
+        Entry entry = entryRepository.findByIdWithEx(entryId);
 
         // 校验表达式是否可以执行
         expressionValidator.validate(entry.getExpression(), ResultTypeEnum.BOOLEAN.getCode());
 
         // 校验流程是否已经发布
-        flowRepositoryWrapper.checkFlowActive(entry.getFlowId(), entry.getVersion());
+        versionFlowRepository.checkFlowActive(entry.getFlowId(), entry.getVersion());
 
         // 新增发布版本入口
         VersionEntry versionEntry = new VersionEntry(
@@ -138,7 +134,7 @@ public class EntryAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long entryId, Integer version) {
         // 查询并校验 version 版本的入口是否存在
-        VersionEntry versionEntry = entryRepositoryWrapper.findByEntryIdAndVersion(entryId, version);
+        VersionEntry versionEntry = versionEntryRepository.findByEntryIdAndVersionWithEx(entryId, version);
 
         // 删除入口
         versionEntryRepository.deleteById(versionEntry.getId());
@@ -152,7 +148,7 @@ public class EntryAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void active(Long entryId, Integer version) {
         // 查询并校验 version 版本的入口是否存在
-        VersionEntry versionEntry = entryRepositoryWrapper.findByEntryIdAndVersion(entryId, version);
+        VersionEntry versionEntry = versionEntryRepository.findByEntryIdAndVersionWithEx(entryId, version);
         if (StatusEnum.isActive(versionEntry.getStatus())) {
             log.error("version entry has been actived. entryId:{}. version:{}", entryId, version);
             throw new CustomBusinessException(ErrorCode.ENTRY_ALREADY_ACTIVED);
@@ -162,7 +158,7 @@ public class EntryAggregateService {
         expressionValidator.validate(versionEntry.getExpression(), ResultTypeEnum.BOOLEAN.getCode());
 
         // 校验流程是否已经发布
-        flowRepositoryWrapper.checkFlowActive(versionEntry.getFlowId(), versionEntry.getVersion());
+        versionFlowRepository.checkFlowActive(versionEntry.getFlowId(), versionEntry.getVersion());
 
         versionEntry.active();
         versionEntryRepository.save(versionEntry);
@@ -176,7 +172,7 @@ public class EntryAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void inactive(Long entryId, Integer version) {
         // 查询并校验 version 版本的入口是否存在
-        VersionEntry versionEntry = entryRepositoryWrapper.findByEntryIdAndVersion(entryId, version);
+        VersionEntry versionEntry = versionEntryRepository.findByEntryIdAndVersionWithEx(entryId, version);
 
         if (StatusEnum.isInactive(versionEntry.getStatus())) {
             log.error("version entry has been inactived. entryId:{}. version:{}", entryId, version);

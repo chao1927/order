@@ -10,7 +10,13 @@ import org.order.domain.entity.Param;
  */
 public interface ParamRepository extends BaseRepository<Param, Long>, NameRepository<Param> {
 
+    Param findByIdWithEx(Long id);
 
+    void checkDuplicateName(String name);
+
+    void checkDuplicateName(String name, Long id);
+
+    void checkParamExist(Long id);
 
 
 }

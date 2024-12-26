@@ -16,4 +16,8 @@ public interface VersionRuleRepository extends BaseRepository<VersionRule, Long>
     Optional<VersionRule> findByRuleIdAndVersion(Long ruleId, Integer version);
 
     Optional<List<VersionRule>> findByRuleId(Long ruleId);
+
+    void checkVersionRuleActive(Long ruleId, Integer version);
+
+    VersionRule findByRuleIdAndVersionWithEx(Long ruleId, Integer version);
 }

@@ -16,4 +16,16 @@ public interface EntryRepository extends BaseRepository<Entry, Long>, NameReposi
     Optional<List<Entry>> findByFlowId(Long flowId);
 
     Optional<List<Entry>> findByFlowIdAndFlowVersion(Long flowId, Integer flowVersion);
+
+    Entry findByIdWithEx(Long id);
+
+    void checkDuplicateName(String name);
+
+    void checkDuplicateName(String name, Long id);
+
+    void checkEntryExist(Long id);
+
+    void checkRefByEntry(Long flowId);
+
+    void checkRefByEntry(Long flowId, Integer flowVersion);
 }

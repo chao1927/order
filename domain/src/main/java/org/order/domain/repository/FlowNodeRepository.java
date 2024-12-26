@@ -20,4 +20,13 @@ public interface FlowNodeRepository extends BaseRepository<FlowNode, Long> {
     Optional<List<FlowNode>> findByTypeAndRefIdAndRefVersion(Integer type, Long refId, Integer refVersion);
 
     Optional<List<FlowNode>> findByFlowId(Long flowId);
+
+    List<FlowNode> findFlowNodeByFlowIdWithEx(Long flowId);
+
+    void checkRefByFlow(FlowNodeTypeEnum type, Long refId);
+
+    void checkRefByFlow(FlowNodeTypeEnum type, Long refId, Integer refVersion);
+
+    void checkFlowNodeActive(List<FlowNode> nodes);
+
 }

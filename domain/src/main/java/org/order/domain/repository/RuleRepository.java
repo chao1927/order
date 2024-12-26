@@ -11,4 +11,11 @@ import org.order.domain.entity.Rule;
  */
 public interface RuleRepository extends BaseRepository<Rule, Long>, NameRepository<Rule> {
 
+    Rule findByIdWithEx(Long ruleId);
+
+    void checkDuplicateName(String name);
+
+    void checkDuplicateName(String name, Long ruleId);
+
+    void checkRuleExist(Long ruleId);
 }

@@ -4,6 +4,7 @@ import org.order.domain.entity.biz.EduExperience;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -15,6 +16,6 @@ import java.util.Optional;
 @Repository
 public interface EduExperienceDao extends JpaRepository<EduExperience, Long> {
 
-    Optional<EduExperience> findByBizInfoId(Long bizInfoId);
+    Optional<List<EduExperience>> findByBizInfoId(Long bizInfoId);
 
 }

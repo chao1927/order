@@ -1,5 +1,6 @@
 package org.order.domain.repository.version;
 
+import org.order.common.enums.RuleItemTypeEnum;
 import org.order.domain.entity.version.VersionRuleItem;
 import org.order.domain.repository.BaseRepository;
 
@@ -22,5 +23,15 @@ public interface VersionRuleItemRepository extends BaseRepository<VersionRuleIte
 
     Optional<List<VersionRuleItem>> findByVersionRuleId(Long versionRuleId);
 
+    List<VersionRuleItem> findRuleItemsByVersionRuleIdWithEx(Long versionRuleId);
+
     void deleteByVersionRuleId(Long versionRuleId);
+
+    void checkRefByVersionRule(RuleItemTypeEnum type, Long refId);
+
+    void checkRefByVersionRule(RuleItemTypeEnum type, Long refId, Integer refVersion);
+
+    void checkRefByActiveVersionRule(RuleItemTypeEnum type, Long refId, Integer refVersion);
+
+    void checkVersionRuleItemActive(List<VersionRuleItem> items);
 }

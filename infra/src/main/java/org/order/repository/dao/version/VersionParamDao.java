@@ -21,6 +21,8 @@ public interface VersionParamDao extends JpaRepository<VersionParam, Long> {
 
     Optional<List<VersionParam>> findByParamIdAndStatus(Long paramId, Integer status);
 
+    Optional<List<VersionParam>> findByStatus(Integer status);
+
     Optional<List<VersionParam>> findByParamId(Long paramId);
 
     void deleteByParamId(Long paramId);

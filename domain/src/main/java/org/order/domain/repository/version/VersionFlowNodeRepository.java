@@ -1,5 +1,6 @@
 package org.order.domain.repository.version;
 
+import org.order.common.enums.FlowNodeTypeEnum;
 import org.order.domain.entity.version.VersionFlowNode;
 import org.order.domain.repository.BaseRepository;
 
@@ -23,4 +24,13 @@ public interface VersionFlowNodeRepository extends BaseRepository<VersionFlowNod
 
     Optional<List<VersionFlowNode>> findByVersionFlowId(Long versionFlowId);
 
+    List<VersionFlowNode> findVersionFlowNodeByFlowIdWithEx(Long versionFlowId);
+
+    void checkRefByVersionFlow(FlowNodeTypeEnum type, Long refId);
+
+    void checkRefByVersionFlow(FlowNodeTypeEnum type, Long refId, Integer refVersion);
+
+    void checkRefByActiveVersionFlow(FlowNodeTypeEnum type, Long refId, Integer refVersion);
+
+    void checkVersionFlowNodeActive(List<VersionFlowNode> nodes);
 }

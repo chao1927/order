@@ -30,4 +30,15 @@ public class VersionRuleItemConfig {
 
     private Integer refVersion;
 
+    private VersionParamConfig paramConfig;
+
+    public VersionRuleItemConfig(Long id, Long versionRuleId, Integer sort, String name, RuleItemTypeEnum type, Long refId, Integer refVersion) {
+        this.id = id;
+        this.versionRuleId = versionRuleId;
+        this.sort = sort;
+        this.name = name;
+        this.type = type;
+        this.refId = refId;
+        this.refVersion = refVersion;
+    }
 }

@@ -5,6 +5,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.order.common.enums.ErrorCode;
 import org.order.common.enums.StatusEnum;
 import org.order.common.exception.CustomBusinessException;
+import org.order.domain.converter.FlowConverter;
 import org.order.domain.entity.Flow;
 import org.order.domain.entity.FlowLine;
 import org.order.domain.entity.FlowNode;
@@ -15,16 +16,14 @@ import org.order.domain.event.ConfigChangeDomainEvent;
 import org.order.domain.event.DomainEventEnum;
 import org.order.domain.event.DomainEventPublisher;
 import org.order.domain.event.VersionConfigChangeDomainEvent;
+import org.order.domain.repository.EntryRepository;
 import org.order.domain.repository.FlowLineRepository;
 import org.order.domain.repository.FlowNodeRepository;
 import org.order.domain.repository.FlowRepository;
+import org.order.domain.repository.version.VersionEntryRepository;
 import org.order.domain.repository.version.VersionFlowLineRepository;
 import org.order.domain.repository.version.VersionFlowNodeRepository;
 import org.order.domain.repository.version.VersionFlowRepository;
-import org.order.domain.repository.wrapper.EntryRepositoryWrapper;
-import org.order.domain.repository.wrapper.FlowLineRepositoryWrapper;
-import org.order.domain.repository.wrapper.FlowNodeRepositoryWrapper;
-import org.order.domain.repository.wrapper.FlowRepositoryWrapper;
 import org.order.domain.validator.FlowValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -44,6 +43,11 @@ import java.util.stream.Collectors;
 @Component
 public class FlowAggregateService {
 
+    @Autowired
+    private EntryRepository entryRepository;
+
+    @Autowired
+    private VersionEntryRepository versionEntryRepository;
 
     @Autowired
     private FlowRepository flowRepository;
@@ -63,19 +67,6 @@ public class FlowAggregateService {
     @Autowired
     private VersionFlowLineRepository versionFlowLineRepository;
 
-
-    @Autowired
-    private EntryRepositoryWrapper entryRepositoryWrapper;
-
-    @Autowired
-    private FlowRepositoryWrapper flowRepositoryWrapper;
-
-    @Autowired
-    private FlowNodeRepositoryWrapper flowNodeRepositoryWrapper;
-
-    @Autowired
-    private FlowLineRepositoryWrapper flowLineRepositoryWrapper;
-
     @Autowired
     private FlowValidator flowValidator;
 
@@ -86,7 +77,7 @@ public class FlowAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void create(FlowAggregate flowAgg) {
         // 查询流程名称是否重复
-        flowRepositoryWrapper.checkDuplicateName(flowAgg.getName());
+        flowRepository.checkDuplicateName(flowAgg.getName());
 
         // 新增流程
         Flow flow = new Flow(flowAgg.getName(), flowAgg.getDescription());
@@ -95,27 +86,10 @@ public class FlowAggregateService {
         flowRepository.save(flow);
 
         // 保存流程节点
-        List<FlowNode> newNodes = flowAgg.getNodes().stream().map(node -> new FlowNode(
-                flow.getId(),
-                node.getName(),
-                node.getDescription(),
-                node.getType(),
-                node.getContent(),
-                node.getRefId(),
-                node.getRefVersion()
-        )).collect(Collectors.toList());
-        flowNodeRepository.saveAll(newNodes);
+        flowNodeRepository.saveAll(FlowConverter.convertNewFlowNodes(flow.getId(), flowAgg.getNodes()));
 
         // 保存流程边
-        List<FlowLine> newLines = flowAgg.getLines().stream().map(line -> new FlowLine(
-                flow.getId(),
-                line.getPreNodeId(),
-                line.getPreNodeName(),
-                line.getNextNodeId(),
-                line.getNextNodeName(),
-                line.getContent()
-        )).collect(Collectors.toList());
-        flowLineRepository.saveAll(newLines);
+        flowLineRepository.saveAll(FlowConverter.convertNewFlowLines(flow.getId(), flowAgg.getLines()));
 
         // 发送创建流程领域事件
         domainEventPublisher.publish(new ConfigChangeDomainEvent(DomainEventEnum.FLOW_CREATED_EVENT, flow.getId()));
@@ -124,39 +98,22 @@ public class FlowAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void update(FlowAggregate flowAgg) {
         // 查询并判断流程是否存在
-        Flow flow = flowRepositoryWrapper.findByIdWithEx(flowAgg.getId());
+        Flow flow = flowRepository.findByIdWithEx(flowAgg.getId());
 
         // 查询流程名称是否重复
-        flowRepositoryWrapper.checkDuplicateName(flowAgg.getName(), flowAgg.getId());
+        flowRepository.checkDuplicateName(flowAgg.getName(), flowAgg.getId());
 
         // 修改流程
         flow.change(flowAgg.getName(), flowAgg.getDescription());
         flowRepository.save(flow);
 
         // 更新流程节点
-        List<FlowNode> newNodes = flowAgg.getNodes().stream().map(node -> new FlowNode(
-                flow.getId(),
-                node.getName(),
-                node.getDescription(),
-                node.getType(),
-                node.getContent(),
-                node.getRefId(),
-                node.getRefVersion()
-        )).collect(Collectors.toList());
-        flowNodeRepository.deleteByFlowId(flowAgg.getId());
-        flowNodeRepository.saveAll(newNodes);
+        flowNodeRepository.deleteByFlowId(flow.getId());
+        flowNodeRepository.saveAll(FlowConverter.convertNewFlowNodes(flow.getId(), flowAgg.getNodes()));
 
         // 保存流程边
-        List<FlowLine> newLines = flowAgg.getLines().stream().map(line -> new FlowLine(
-                flow.getId(),
-                line.getPreNodeId(),
-                line.getPreNodeName(),
-                line.getNextNodeId(),
-                line.getNextNodeName(),
-                line.getContent()
-        )).collect(Collectors.toList());
-        flowLineRepository.deleteByFlowId(flowAgg.getId());
-        flowLineRepository.saveAll(newLines);
+        flowLineRepository.deleteByFlowId(flow.getId());
+        flowLineRepository.saveAll(FlowConverter.convertNewFlowLines(flow.getId(), flowAgg.getLines()));
 
         // 发送更新流程领域事件
         domainEventPublisher.publish(new ConfigChangeDomainEvent(DomainEventEnum.FLOW_UPDATED_EVENT, flow.getId()));
@@ -165,13 +122,13 @@ public class FlowAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long flowId) {
         // 判断流程是否存在，如果不存在则抛出异常
-        flowRepositoryWrapper.checkFlowExist(flowId);
+        flowRepository.checkFlowExist(flowId);
 
         // 判断流程是否被入口引用, 如果被引用则抛出异常
-        entryRepositoryWrapper.checkRefByEntry(flowId);
+        entryRepository.checkRefByEntry(flowId);
 
         // 判断流程是否被版本入口引用，如果被引用则抛出异常
-        entryRepositoryWrapper.checkRefByVersionEntry(flowId);
+        versionEntryRepository.checkRefByVersionEntry(flowId);
 
         // 删除流程
         flowRepository.deleteById(flowId);
@@ -199,16 +156,16 @@ public class FlowAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void active(Long flowId) {
         // 查询并判断流程是否存在, 如果不存在，则抛出异常
-        Flow flow = flowRepositoryWrapper.findByIdWithEx(flowId);
+        Flow flow = flowRepository.findByIdWithEx(flowId);
 
         // 查询并判断流程节点是否存在, 如果不存在，则抛出异常
-        List<FlowNode> nodes = flowNodeRepositoryWrapper.findFlowNodeByFlowIdWithEx(flowId);
+        List<FlowNode> nodes = flowNodeRepository.findFlowNodeByFlowIdWithEx(flowId);
 
         // 查询并判断流程边是否存在, 如果不存在，则抛出异常
-        List<FlowLine> lines = flowLineRepositoryWrapper.findFlowLineByFlowIdWithEx(flowId);
+        List<FlowLine> lines = flowLineRepository.findFlowLineByFlowIdWithEx(flowId);
 
         // 校验节点引用的项(规则, action)是否都已发布,如果没有，则抛出异常
-        flowNodeRepositoryWrapper.checkFlowNodeActive(nodes);
+        flowNodeRepository.checkFlowNodeActive(nodes);
 
         // 校验流程是否合法
         flowValidator.validFlow(nodes, lines);
@@ -219,27 +176,10 @@ public class FlowAggregateService {
         versionFlowRepository.save(versionFlow);
 
         // 新增版本节点
-        List<VersionFlowNode> versionFlowNodes = nodes.stream().map(node -> new VersionFlowNode(
-                versionFlow.getId(),
-                node.getName(),
-                node.getDescription(),
-                node.getType(),
-                node.getContent(),
-                node.getRefId(),
-                node.getRefVersion()
-        )).collect(Collectors.toList());
-        versionFlowNodeRepository.saveAll(versionFlowNodes);
+        versionFlowNodeRepository.saveAll(FlowConverter.convertNewVersionFlowNodes(versionFlow.getId(), nodes));
 
         // 新增版本边
-        List<VersionFlowLine> versionFlowLines = lines.stream().map(line -> new VersionFlowLine(
-                versionFlow.getId(),
-                line.getPreNodeId(),
-                line.getPreNodeName(),
-                line.getNextNodeId(),
-                line.getNextNodeName(),
-                line.getContent()
-        )).collect(Collectors.toList());
-        versionFlowLineRepository.saveAll(versionFlowLines);
+        versionFlowLineRepository.saveAll(FlowConverter.convertNewVersionFlowLines(versionFlow.getId(), lines));
 
         // 更新流程版本状态
         flow.versioned();
@@ -254,13 +194,13 @@ public class FlowAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long flowId, Integer version) {
         // 查询并判断 version 版本流程是否存在， 如果不存在，则抛出异常
-        VersionFlow versionFlow = flowRepositoryWrapper.findByFlowIdAndVersionWithEx(flowId, version);
+        VersionFlow versionFlow = versionFlowRepository.findByFlowIdAndVersionWithEx(flowId, version);
 
         // 判断 version 版本流程是否入口使用, 如果使用则抛出异常
-        entryRepositoryWrapper.checkRefByEntry(flowId, version);
+        entryRepository.checkRefByEntry(flowId, version);
 
         // 判断 version 版本流程是否被版本入口使用, 如果使用则抛出异常
-        entryRepositoryWrapper.checkRefByVersionEntry(flowId, version);
+        versionEntryRepository.checkRefByVersionEntry(flowId, version);
 
         // 删除版本流程及其节点和边
         versionFlowRepository.deleteById(versionFlow.getId());
@@ -276,7 +216,7 @@ public class FlowAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void active(Long flowId, Integer version) {
         // 查询并判断 version 版本流程是否存在， 如果不存在，则抛出异常
-        VersionFlow versionFlow = flowRepositoryWrapper.findByFlowIdAndVersionWithEx(flowId, version);
+        VersionFlow versionFlow = versionFlowRepository.findByFlowIdAndVersionWithEx(flowId, version);
 
         // 判断 version 版本流程是否处于发布状态，如果处于发布状态则抛出异常
         if (StatusEnum.isActive(versionFlow.getStatus())) {
@@ -285,13 +225,13 @@ public class FlowAggregateService {
         }
 
         // 查询并判断版本流程节点是否存在, 如果不存在，则抛出异常
-        List<VersionFlowNode> nodes = flowNodeRepositoryWrapper.findVersionFlowNodeByFlowIdWithEx(versionFlow.getId());
+        List<VersionFlowNode> nodes = versionFlowNodeRepository.findVersionFlowNodeByFlowIdWithEx(versionFlow.getId());
 
         // 查询并判断版本流程边是否存在, 如果不存在，则抛出异常
-        List<VersionFlowLine> lines = flowLineRepositoryWrapper.findVersionFlowLineByFlowIdWithEx(versionFlow.getId());
+        List<VersionFlowLine> lines = versionFlowLineRepository.findVersionFlowLineByFlowIdWithEx(versionFlow.getId());
 
         // 校验节点引用的项(规则, action)是否都已发布,如果没有，则抛出异常
-        flowNodeRepositoryWrapper.checkVersionFlowNodeActive(nodes);
+        versionFlowNodeRepository.checkVersionFlowNodeActive(nodes);
 
         // 校验流程是否合法
         flowValidator.validVersionFlow(nodes, lines);
@@ -308,7 +248,7 @@ public class FlowAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void inactive(Long flowId, Integer version) {
         // 查询并判断 version 版本流程是否存在， 如果不存在，则抛出异常
-        VersionFlow versionFlow = flowRepositoryWrapper.findByFlowIdAndVersionWithEx(flowId, version);
+        VersionFlow versionFlow = versionFlowRepository.findByFlowIdAndVersionWithEx(flowId, version);
 
         // 判断 version 版本流程是否处于下架状态，如果处于下架状态则抛出异常
         if (StatusEnum.isInactive(versionFlow.getStatus())) {
@@ -317,10 +257,10 @@ public class FlowAggregateService {
         }
 
         // 判断 version 版本流程是否被入口使用, 如果使用则抛出异常
-        entryRepositoryWrapper.checkRefByEntry(flowId, version);
+        entryRepository.checkRefByEntry(flowId, version);
 
         // 判断 version 版本流程是否被其他已发布版本入口使用, 如果使用则抛出异常
-        entryRepositoryWrapper.checkRefByActiveVersionEntry(flowId, version);
+        versionEntryRepository.checkRefByActiveVersionEntry(flowId, version);
 
         // 下架版本流程
         versionFlow.inactive();

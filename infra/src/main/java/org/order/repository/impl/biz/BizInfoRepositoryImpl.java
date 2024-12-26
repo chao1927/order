@@ -24,13 +24,15 @@ public class BizInfoRepositoryImpl extends BaseRepositoryImpl<BizInfo, Long> imp
     @Override
     public void save(BizInfo bizInfo) {
         bizInfoDao.save(bizInfo);
-
-        // 保存其它数据
-
     }
 
     @Override
     public Optional<BizInfo> findById(Long id) {
         return bizInfoDao.findById(id);
+    }
+
+    @Override
+    public Optional<BizInfo> findByOrderNo(String orderNo) {
+        return bizInfoDao.findByOrderNo(orderNo);
     }
 }

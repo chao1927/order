@@ -14,6 +14,6 @@ import java.util.Optional;
  */
 public interface FamilyMemberRepository extends BaseRepository<FamilyMember, Long> {
 
-    Optional<FamilyMember> findByBizInfoId(Long bizInfoId);
+    Optional<List<FamilyMember>> findByBizInfoId(Long bizInfoId);
 
 }

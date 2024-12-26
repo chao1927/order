@@ -1,5 +1,8 @@
 package org.order.repository.impl.version;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.order.common.enums.ErrorCode;
+import org.order.common.exception.CustomBusinessException;
 import org.order.domain.entity.version.VersionFlowLine;
 import org.order.domain.repository.version.VersionFlowLineRepository;
 import org.order.repository.dao.version.VersionFlowLineDao;
@@ -31,4 +34,14 @@ public class VersionFlowLineRepositoryImpl extends BaseRepositoryImpl<VersionFlo
     public Optional<List<VersionFlowLine>> findByVersionFlowId(Long versionFlowId) {
         return versionFlowLineDao.findByVersionFlowId(versionFlowId);
     }
+
+    @Override
+    public List<VersionFlowLine> findVersionFlowLineByFlowIdWithEx(Long versionFlowId) {
+        Optional<List<VersionFlowLine>> linesOp = findByVersionFlowId(versionFlowId);
+        if (linesOp.isEmpty() || CollectionUtils.isEmpty(linesOp.get())) {
+            throw new CustomBusinessException(ErrorCode.FLOW_LINE_IS_EMPTY);
+        }
+        return linesOp.get();
+    }
+
 }

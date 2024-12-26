@@ -23,8 +23,6 @@ public class VersionParamConfig implements IdAndVersion {
 
     private String name;
 
-    private String description;
-
     private String expression;
 
     private ResultTypeEnum resultType;

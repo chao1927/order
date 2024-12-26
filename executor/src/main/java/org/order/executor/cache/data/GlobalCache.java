@@ -1,5 +1,8 @@
 package org.order.executor.cache.data;
 
+import org.order.domain.aggregate.BizInfoAggregate;
+import org.order.domain.aggregate.BizInfoAggregateService;
+
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -17,15 +20,24 @@ public class GlobalCache {
      */
     private ConcurrentMap<String, DataCache> dataCaches;
 
+    private BizInfoAggregateService bizInfoAggregateService;
+
 
     public void addDataCache(DataCache dataCache) {
-        dataCaches.put(dataCache.taskId(), dataCache);
+        dataCaches.put(dataCache.bizId(), dataCache);
     }
 
     public DataCache removeDataCache(String taskId) {
         return dataCaches.remove(taskId);
     }
 
+    public void loadDataCache(String bizId) {
+        BizInfoAggregate bizInfoAgg = bizInfoAggregateService.load(bizId);
+        addDataCache(new DataCache(bizId, bizInfoAgg.toData()));
+    }
 
 
+    public DataCache getDataCache(String bizId) {
+        return dataCaches.get(bizId);
+    }
 }

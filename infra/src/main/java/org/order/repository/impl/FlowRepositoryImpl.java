@@ -1,5 +1,7 @@
 package org.order.repository.impl;
 
+import org.order.common.enums.ErrorCode;
+import org.order.common.exception.CustomBusinessException;
 import org.order.domain.entity.Flow;
 import org.order.domain.repository.FlowRepository;
 import org.order.repository.dao.FlowDao;
@@ -29,6 +31,34 @@ public class FlowRepositoryImpl extends BaseRepositoryImpl<Flow, Long> implement
     @Override
     public Optional<Flow> findByName(String name) {
         return flowDao.findByName(name);
+    }
+
+    @Override
+    public Flow findByIdWithEx(Long id) {
+        return findById(id).orElseThrow(
+                () -> new CustomBusinessException(ErrorCode.FLOW_NOT_FOUND)
+        );
+    }
+
+    @Override
+    public void checkDuplicateName(String name) {
+        findByName(name).ifPresent(flow -> {
+            throw new CustomBusinessException(ErrorCode.FLOW_NAME_DUPLICATE);
+        });
+    }
+
+    @Override
+    public void checkDuplicateName(String name, Long id) {
+        findByNameAndIdNot(name, id).ifPresent(flow -> {
+            throw new CustomBusinessException(ErrorCode.FLOW_NAME_DUPLICATE);
+        });
+    }
+
+    @Override
+    public void checkFlowExist(Long id) {
+        findById(id).orElseThrow(
+                () -> new CustomBusinessException(ErrorCode.FLOW_NOT_FOUND)
+        );
     }
 
 }

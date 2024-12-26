@@ -17,4 +17,10 @@ public interface VersionParamRepository extends BaseRepository<VersionParam, Lon
     Optional<VersionParam> findByParamIdAndVersion(Long paramId, Integer version);
 
     void deleteByParamId(Long paramId);
+
+    void checkVersionParamActive(Long paramId, Integer version);
+
+    VersionParam findByParamIdAndVersionWithEx(Long paramId, Integer version);
+
+    Optional<List<VersionParam>> findActive();
 }

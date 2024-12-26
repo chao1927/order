@@ -24,7 +24,7 @@ public class WorkExperienceRepositoryImpl extends BaseRepositoryImpl<WorkExperie
 
 
     @Override
-    public Optional<WorkExperience> findByBizInfoId(Long bizInfoId) {
+    public Optional<List<WorkExperience>> findByBizInfoId(Long bizInfoId) {
         return workExperienceDao.findByBizInfoId(bizInfoId);
     }
 }

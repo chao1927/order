@@ -123,7 +123,8 @@ public enum ErrorCode {
 
 
 
-    WRITE_VALUE_ERROR(5101, "write value error.");
+    WRITE_VALUE_ERROR(5101, "write value error."),
+    BIZ_NOT_FOUND(5101, "biz not found.");
 
     private final Integer code;
     private final String message;

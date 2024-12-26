@@ -22,8 +22,6 @@ public class VersionActionConfig implements IdAndVersion {
 
     private String name;
 
-    private String description;
-
     private Integer version;
 
     @Override

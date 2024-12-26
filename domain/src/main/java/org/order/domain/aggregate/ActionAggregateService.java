@@ -12,9 +12,9 @@ import org.order.domain.event.DomainEventEnum;
 import org.order.domain.event.DomainEventPublisher;
 import org.order.domain.event.VersionConfigChangeDomainEvent;
 import org.order.domain.repository.ActionRepository;
+import org.order.domain.repository.FlowNodeRepository;
 import org.order.domain.repository.version.VersionActionRepository;
-import org.order.domain.repository.wrapper.ActionRepositoryWrapper;
-import org.order.domain.repository.wrapper.FlowNodeRepositoryWrapper;
+import org.order.domain.repository.version.VersionFlowNodeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,10 +36,10 @@ public class ActionAggregateService {
     private VersionActionRepository versionActionRepository;
 
     @Autowired
-    private ActionRepositoryWrapper actionRepositoryWrapper;
+    private FlowNodeRepository flowNodeRepository;
 
     @Autowired
-    private FlowNodeRepositoryWrapper flowNodeRepositoryWrapper;
+    private VersionFlowNodeRepository versionFlowNodeRepository;
 
     @Autowired
     private DomainEventPublisher domainEventPublisher;
@@ -48,7 +48,7 @@ public class ActionAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void create(Action action) {
         // 判断是否有重名的action
-        actionRepositoryWrapper.checkDuplicateName(action.getName());
+        actionRepository.checkDuplicateName(action.getName());
 
         // 初始化版本号
         action.initVersion();
@@ -63,10 +63,10 @@ public class ActionAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void update(Action action) {
         // 查询并判断action 是否存在，如果不存在则抛出异常
-        Action oldAction = actionRepositoryWrapper.findByIdWithEx(action.getId());
+        Action oldAction = actionRepository.findByIdWithEx(action.getId());
 
         // 判断是否有重名的action
-        actionRepositoryWrapper.checkDuplicateName(action.getName(), action.getId());
+        actionRepository.checkDuplicateName(action.getName(), action.getId());
 
         // 更新action
         oldAction.change(action.getName(), action.getDescription());
@@ -79,13 +79,13 @@ public class ActionAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long actionId) {
         // 判断action 是否存在，如果不存在则抛出异常
-        actionRepositoryWrapper.checkActionExist(actionId);
+        actionRepository.checkActionExist(actionId);
 
         // 判断action 是否被流程引用，如果被引用则抛出异常
-        flowNodeRepositoryWrapper.checkRefByFlow(FlowNodeTypeEnum.ACTION, actionId);
+        flowNodeRepository.checkRefByFlow(FlowNodeTypeEnum.ACTION, actionId);
 
         // 判断action 是否被版本流程引用，如果被引用则抛出异常
-        flowNodeRepositoryWrapper.checkRefByVersionFlow(FlowNodeTypeEnum.ACTION, actionId);
+        versionFlowNodeRepository.checkRefByVersionFlow(FlowNodeTypeEnum.ACTION, actionId);
 
         // 删除版本action
         versionActionRepository.deleteByActionId(actionId);
@@ -100,7 +100,7 @@ public class ActionAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void active(Long actionId) {
         // 查询并判断action 是否存在，如果不存在则抛出异常
-        Action action = actionRepositoryWrapper.findByIdWithEx(actionId);
+        Action action = actionRepository.findByIdWithEx(actionId);
 
         // 新增版本action
         VersionAction versionAction = new VersionAction(
@@ -126,7 +126,7 @@ public class ActionAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void active(Long actionId, Integer version) {
         // 查询并判断版本 action 是否存在，如果不存在则抛出异常
-        VersionAction versionAction = actionRepositoryWrapper.findByActionIdAndVersionWithEx(actionId, version);
+        VersionAction versionAction = versionActionRepository.findByActionIdAndVersionWithEx(actionId, version);
 
         // 判断版本 action 是否处于发布状态，如果处于发布状态则抛出异常
         if (StatusEnum.isActive(versionAction.getStatus())) {
@@ -147,7 +147,7 @@ public class ActionAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void inactive(Long actionId, Integer version) {
         // 查询并判断版本 action 是否存在，如果不存在则抛出异常
-        VersionAction versionAction = actionRepositoryWrapper.findByActionIdAndVersionWithEx(actionId, version);
+        VersionAction versionAction = versionActionRepository.findByActionIdAndVersionWithEx(actionId, version);
 
         // 判断版本 action 是否处于下架状态，如果处于下架状态则抛出异常
         if (StatusEnum.isInactive(versionAction.getStatus())) {
@@ -156,10 +156,10 @@ public class ActionAggregateService {
         }
 
         // 判断版本 action 是否被流程引用，如果被引用则抛出异常
-        flowNodeRepositoryWrapper.checkRefByFlow(FlowNodeTypeEnum.ACTION, actionId, version);
+        flowNodeRepository.checkRefByFlow(FlowNodeTypeEnum.ACTION, actionId, version);
 
         // 判断版本 action 是否被版本流程引用，如果被引用则抛出异常
-        flowNodeRepositoryWrapper.checkRefByActiveVersionFlow(FlowNodeTypeEnum.ACTION, actionId, version);
+        versionFlowNodeRepository.checkRefByActiveVersionFlow(FlowNodeTypeEnum.ACTION, actionId, version);
 
         // 下架版本 action
         versionAction.inactive();
@@ -174,13 +174,13 @@ public class ActionAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long actionId, Integer version) {
         // 查询并判断版本 action 是否存在，如果不存在则抛出异常
-        VersionAction versionAction = actionRepositoryWrapper.findByActionIdAndVersionWithEx(actionId, version);
+        VersionAction versionAction = versionActionRepository.findByActionIdAndVersionWithEx(actionId, version);
 
         // 判断版本 action 是否被流程引用，如果被引用则抛出异常
-        flowNodeRepositoryWrapper.checkRefByFlow(FlowNodeTypeEnum.ACTION, actionId, version);
+        flowNodeRepository.checkRefByFlow(FlowNodeTypeEnum.ACTION, actionId, version);
 
         // 判断版本 action 是否被版本流程引用，如果被引用则抛出异常
-        flowNodeRepositoryWrapper.checkRefByVersionFlow(FlowNodeTypeEnum.ACTION, actionId, version);
+        versionFlowNodeRepository.checkRefByVersionFlow(FlowNodeTypeEnum.ACTION, actionId, version);
 
         // 删除版本 action
         versionActionRepository.deleteById(versionAction.getId());

@@ -12,7 +12,10 @@ import java.util.Optional;
  * @date 2024/11/17
  */
 public interface FlowLineRepository extends BaseRepository<FlowLine, Long> {
-    void deleteByFlowId(Long flowId);
 
     Optional<List<FlowLine>> findByFlowId(Long flowId);
+
+    List<FlowLine> findFlowLineByFlowIdWithEx(Long flowId);
+
+    void deleteByFlowId(Long flowId);
 }

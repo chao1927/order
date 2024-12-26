@@ -12,9 +12,9 @@ import org.order.domain.event.DomainEventEnum;
 import org.order.domain.event.DomainEventPublisher;
 import org.order.domain.event.VersionConfigChangeDomainEvent;
 import org.order.domain.repository.ParamRepository;
+import org.order.domain.repository.RuleItemRepository;
 import org.order.domain.repository.version.VersionParamRepository;
-import org.order.domain.repository.wrapper.ParamRepositoryWrapper;
-import org.order.domain.repository.wrapper.RuleItemRepositoryWrapper;
+import org.order.domain.repository.version.VersionRuleItemRepository;
 import org.order.domain.validator.ExpressionValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,10 +39,10 @@ public class ParamAggregateService {
     private VersionParamRepository versionParamRepository;
 
     @Autowired
-    private ParamRepositoryWrapper paramRepositoryWrapper;
+    private RuleItemRepository ruleItemRepository;
 
     @Autowired
-    private RuleItemRepositoryWrapper ruleItemRepositoryWrapper;
+    private VersionRuleItemRepository versionRuleItemRepository;
 
     @Autowired
     private ExpressionValidator paramExpressionValidator;
@@ -53,7 +53,7 @@ public class ParamAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void create(Param param) {
         // 没有同名变量
-        paramRepositoryWrapper.checkDuplicateName(param.getName());
+        paramRepository.checkDuplicateName(param.getName());
 
         // 初始化变量版本号
         param.initVersion();
@@ -68,10 +68,10 @@ public class ParamAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void update(Param param) {
         // 变量存在
-        Param oldParam = paramRepositoryWrapper.findByIdWithEx(param.getId());
+        Param oldParam = paramRepository.findByIdWithEx(param.getId());
 
         // 要修改的变量名称不存在
-        paramRepositoryWrapper.checkDuplicateName(param.getName(), param.getId());
+        paramRepository.checkDuplicateName(param.getName(), param.getId());
 
         // 保存数据
         oldParam.change(param.getName(), param.getDescription(), param.getExpression(), param.getResultType());
@@ -83,13 +83,13 @@ public class ParamAggregateService {
 
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long paramId) {
-        paramRepositoryWrapper.checkParamExist(paramId);
+        paramRepository.checkParamExist(paramId);
 
         // 判断变量是否被规则引用,如果被引用,不能删除
-        ruleItemRepositoryWrapper.checkRefByRule(RuleItemTypeEnum.PARAM, paramId);
+        ruleItemRepository.checkRefByRule(RuleItemTypeEnum.PARAM, paramId);
 
         // 判断变量是否被版本规则引用,如果被引用,不能删除
-        ruleItemRepositoryWrapper.checkRefByVersionRule(RuleItemTypeEnum.PARAM, paramId);
+        versionRuleItemRepository.checkRefByVersionRule(RuleItemTypeEnum.PARAM, paramId);
 
         // 删除版本变量
         versionParamRepository.deleteByParamId(paramId);
@@ -104,7 +104,7 @@ public class ParamAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void active(Long paramId) {
         // 查询并判断变量是否存在,如果不存在,抛出异常
-        Param param = paramRepositoryWrapper.findByIdWithEx(paramId);
+        Param param = paramRepository.findByIdWithEx(paramId);
 
         // 校验表达式, 校验表达式是否可以执行, 已发布的表达式必须是可执行的.
         paramExpressionValidator.validate(param.getExpression(), param.getResultType());
@@ -135,13 +135,13 @@ public class ParamAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void delete(Long paramId, Integer version) {
         // 查询并校验 version 版本的版本变量是否存在
-        VersionParam versionParam = paramRepositoryWrapper.findByParamIdAndVersionWithEx(paramId, version);
+        VersionParam versionParam = versionParamRepository.findByParamIdAndVersionWithEx(paramId, version);
 
         // 判断 version 版本变量是否被规则引用,如果被引用,则抛出异常
-        ruleItemRepositoryWrapper.checkRefByRule(RuleItemTypeEnum.PARAM, paramId, version);
+        ruleItemRepository.checkRefByRule(RuleItemTypeEnum.PARAM, paramId, version);
 
         // 判断 version 版本变量是否被版本规则引用,如果被引用,则抛出异常
-        ruleItemRepositoryWrapper.checkRefByVersionRule(RuleItemTypeEnum.PARAM, paramId, version);
+        versionRuleItemRepository.checkRefByVersionRule(RuleItemTypeEnum.PARAM, paramId, version);
 
         // 删除版本变量
         versionParamRepository.deleteById(versionParam.getId());
@@ -155,7 +155,7 @@ public class ParamAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void active(Long paramId, Integer version) {
         // 查询并校验 version 版本的版本变量是否存在
-        VersionParam versionParam = paramRepositoryWrapper.findByParamIdAndVersionWithEx(paramId, version);
+        VersionParam versionParam = versionParamRepository.findByParamIdAndVersionWithEx(paramId, version);
 
         // 判断 version 版本变量是否已发布, 已发布的版本变量, 不需要再次发布
         if (StatusEnum.isActive(versionParam.getStatus())) {
@@ -179,7 +179,7 @@ public class ParamAggregateService {
     @Transactional(rollbackFor = Exception.class)
     public void inactive(Long paramId, Integer version) {
         // 查询并校验 version 版本的版本变量是否存在
-        VersionParam versionParam = paramRepositoryWrapper.findByParamIdAndVersionWithEx(paramId, version);
+        VersionParam versionParam = versionParamRepository.findByParamIdAndVersionWithEx(paramId, version);
 
         // 判断 version 版本变量是否已下架, 已下架的版本变量, 不需要再次下架
         if (StatusEnum.isInactive(versionParam.getStatus())) {
@@ -188,10 +188,10 @@ public class ParamAggregateService {
         }
 
         // 判断version 版本变量是否被规则引用
-        ruleItemRepositoryWrapper.checkRefByRule(RuleItemTypeEnum.PARAM, paramId, version);
+        ruleItemRepository.checkRefByRule(RuleItemTypeEnum.PARAM, paramId, version);
 
         // 判断version 版本变量是否被已发布的版本规则引用
-        ruleItemRepositoryWrapper.checkRefByActiveVersionRule(RuleItemTypeEnum.PARAM, paramId, version);
+        versionRuleItemRepository.checkRefByActiveVersionRule(RuleItemTypeEnum.PARAM, paramId, version);
 
         versionParam.inactive();
         versionParamRepository.save(versionParam);

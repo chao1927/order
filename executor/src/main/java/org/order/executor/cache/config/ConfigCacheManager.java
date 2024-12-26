@@ -3,6 +3,8 @@ package org.order.executor.cache.config;
 import org.order.executor.cache.domain.*;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * 配置缓存管理器
  *
@@ -12,24 +14,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class ConfigCacheManager {
 
-    private final ConfigCache<VersionEntryConfig> entryConfigCache;
+    private final ConfigCache<VersionEntryConfig> entryConfigCache = new ConfigCache<>();
 
-    private final ConfigCache<VersionFlowConfig> flowConfigCache;
+    private final ConfigCache<VersionFlowConfig> flowConfigCache = new ConfigCache<>();
 
-    private final ConfigCache<VersionActionConfig> actionConfigCache;
+    private final ConfigCache<VersionActionConfig> actionConfigCache = new ConfigCache<>();
 
-    private final ConfigCache<VersionRuleConfig> ruleConfigCache;
+    private final ConfigCache<VersionRuleConfig> ruleConfigCache = new ConfigCache<>();
 
-    private final ConfigCache<VersionParamConfig> paramConfigCache;
+    private final ConfigCache<VersionParamConfig> paramConfigCache = new ConfigCache<>();
 
-
-    public ConfigCacheManager() {
-        this.entryConfigCache = new ConfigCache<>();
-        this.flowConfigCache = new ConfigCache<>();
-        this.actionConfigCache = new ConfigCache<>();
-        this.ruleConfigCache = new ConfigCache<>();
-        this.paramConfigCache = new ConfigCache<>();
-    }
 
     /************************************ entry *************************************/
 
@@ -43,6 +37,10 @@ public class ConfigCacheManager {
 
     public VersionEntryConfig getEntryConfig(Long id, Integer version) {
         return entryConfigCache.get(id, version);
+    }
+
+    public List<VersionEntryConfig> getAllEntryConfigList() {
+        return entryConfigCache.getAllList();
     }
 
     /********************************** flow *************************************/

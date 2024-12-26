@@ -25,8 +25,6 @@ public class VersionFlowNodeConfig {
 
     private String name;
 
-    private String description;
-
     private FlowNodeTypeEnum type;
 
     private String content;
@@ -35,16 +33,19 @@ public class VersionFlowNodeConfig {
 
     private Integer refVersion;
 
-    private VersionFlowLineConfig preLine;
+    private List<VersionFlowLineConfig> preLines;
 
     private List<VersionFlowLineConfig> nextLines;
 
+    private VersionRuleConfig ruleConfig;
 
-    public VersionFlowNodeConfig(Long id, Long versionFlowId, String name, String description, FlowNodeTypeEnum type, String content, Long refId, Integer refVersion) {
+    private VersionActionConfig actionConfig;
+
+
+    public VersionFlowNodeConfig(Long id, Long versionFlowId, String name, FlowNodeTypeEnum type, String content, Long refId, Integer refVersion) {
         this.id = id;
         this.versionFlowId = versionFlowId;
         this.name = name;
-        this.description = description;
         this.type = type;
         this.content = content;
         this.refId = refId;
@@ -55,12 +56,24 @@ public class VersionFlowNodeConfig {
         return FlowNodeTypeEnum.START.equals(type);
     }
 
-    public void addFlowLine(VersionFlowLineConfig flowLine) {
+    public void addPreLine(VersionFlowLineConfig flowLine) {
+        if (null == preLines) {
+            this.preLines = new ArrayList<>();
+        }
+
+        this.preLines.add(flowLine);
+    }
+
+    public void addNextLine(VersionFlowLineConfig flowLine) {
         if (null == nextLines) {
             this.nextLines = new ArrayList<>();
         }
 
         this.nextLines.add(flowLine);
     }
+
+
+
+
 
 }

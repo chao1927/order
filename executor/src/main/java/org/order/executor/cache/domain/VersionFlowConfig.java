@@ -26,20 +26,17 @@ public class VersionFlowConfig implements IdAndVersion {
 
     private String name;
 
-    private String description;
-
     private List<VersionFlowLineConfig> lines;
 
     private List<VersionFlowNodeConfig> nodes;
 
-    private VersionFlowNodeConfig startNode;
+    private VersionFlowNodeConfig startNodeConfig;
 
-    public VersionFlowConfig(Long id, Long flowId, Integer version, String name, String description) {
+    public VersionFlowConfig(Long id, Long flowId, Integer version, String name) {
         this.id = id;
         this.flowId = flowId;
         this.version = version;
         this.name = name;
-        this.description = description;
     }
 
     @Override

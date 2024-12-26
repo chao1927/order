@@ -15,4 +15,8 @@ public interface VersionActionRepository extends BaseRepository<VersionAction, L
     Optional<VersionAction> findByActionIdAndVersion(Long actionId, Integer version);
 
     void deleteByActionId(Long actionId);
+
+    VersionAction findByActionIdAndVersionWithEx(Long actionId, Integer version);
+
+    void checkVersionActionActive(Long actionId, Integer version);
 }

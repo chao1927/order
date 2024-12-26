@@ -13,7 +13,11 @@ import java.util.Optional;
  * @date 2024/11/17
  */
 public interface VersionFlowLineRepository extends BaseRepository<VersionFlowLine, Long> {
-    void deleteByVersionFlowId(Long versionFlowId);
 
     Optional<List<VersionFlowLine>> findByVersionFlowId(Long versionFlowId);
+
+    List<VersionFlowLine> findVersionFlowLineByFlowIdWithEx(Long versionFlowId);
+
+    void deleteByVersionFlowId(Long versionFlowId);
+
 }

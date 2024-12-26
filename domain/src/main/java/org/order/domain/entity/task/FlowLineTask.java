@@ -3,6 +3,7 @@ package org.order.domain.entity.task;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.order.common.enums.TaskStatusEnum;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -78,4 +79,35 @@ public class FlowLineTask {
      */
     @Column(name = "update_time")
     private Date updateTime;
+
+    public FlowLineTask(String flowTaskNo, Long versionFlowLineId, String bizId) {
+        this.flowTaskNo = flowTaskNo;
+        this.versionFlowLineId = versionFlowLineId;
+        this.bizId = bizId;
+    }
+
+    public void init() {
+        this.status = TaskStatusEnum.WAIT_EXECUTE.getCode();
+    }
+
+    public void execute() {
+        this.status = TaskStatusEnum.EXECUTING.getCode();
+    }
+
+    public void success(String result) {
+        this.status = TaskStatusEnum.EXECUTE_SUCCESS.getCode();
+        this.result = result;
+        this.finishTime = new Date();
+    }
+
+    public void failed(String result, String failReason) {
+        this.status = TaskStatusEnum.EXECUTE_FAILED.getCode();
+        this.result = result;
+        this.failReason = failReason;
+        this.finishTime = new Date();
+    }
+
+    public void timeout() {
+        this.status = TaskStatusEnum.TASK_TIMEOUT.getCode();
+    }
 }

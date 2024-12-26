@@ -23,7 +23,7 @@ public class EduExperienceRepositoryImpl extends BaseRepositoryImpl<EduExperienc
     private EduExperienceDao eduExperienceDao;
 
     @Override
-    public Optional<EduExperience> findByBizInfoId(Long bizInfoId) {
+    public Optional<List<EduExperience>> findByBizInfoId(Long bizInfoId) {
         return eduExperienceDao.findByBizInfoId(bizInfoId);
     }
 }

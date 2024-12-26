@@ -22,4 +22,12 @@ public interface VersionEntryRepository extends BaseRepository<VersionEntry, Lon
     Optional<List<VersionEntry>> findByFlowIdAndFlowVersion(Long flowId, Integer flowVersion);
 
     Optional<List<VersionEntry>> findByFlowIdAndFlowVersionAndStatus(Long flowId, Integer flowVersion, Integer status);
+
+    VersionEntry findByEntryIdAndVersionWithEx(Long entryId, Integer version);
+
+    void checkRefByVersionEntry(Long flowId);
+
+    void checkRefByVersionEntry(Long flowId, Integer flowVersion);
+
+    void checkRefByActiveVersionEntry(Long flowId, Integer flowVersion);
 }

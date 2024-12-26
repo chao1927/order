@@ -1,5 +1,9 @@
 package org.order.repository.impl.version;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.order.common.enums.ErrorCode;
+import org.order.common.enums.StatusEnum;
+import org.order.common.exception.CustomBusinessException;
 import org.order.domain.entity.version.VersionEntry;
 import org.order.domain.repository.version.VersionEntryRepository;
 import org.order.repository.dao.version.VersionEntryDao;
@@ -46,5 +50,33 @@ public class VersionEntryRepositoryImpl extends BaseRepositoryImpl<VersionEntry,
     @Override
     public Optional<List<VersionEntry>> findByFlowIdAndFlowVersionAndStatus(Long flowId, Integer flowVersion, Integer status) {
         return Optional.empty();
+    }
+
+    @Override
+    public VersionEntry findByEntryIdAndVersionWithEx(Long entryId, Integer version) {
+        return findByEntryIdAndVersion(entryId, version).orElseThrow(
+                () -> new CustomBusinessException(ErrorCode.ENTRY_NOT_FOUND)
+        );
+    }
+
+    @Override
+    public void checkRefByVersionEntry(Long flowId) {
+        checkResult(findByFlowId(flowId));
+    }
+
+    @Override
+    public void checkRefByVersionEntry(Long flowId, Integer flowVersion) {
+        checkResult(findByFlowIdAndFlowVersion(flowId, flowVersion));
+    }
+
+    @Override
+    public void checkRefByActiveVersionEntry(Long flowId, Integer flowVersion) {
+        checkResult(findByFlowIdAndFlowVersionAndStatus(flowId, flowVersion, StatusEnum.ACTIVATED.getCode()));
+    }
+
+    private <T> void checkResult(Optional<List<T>> entriesOp) {
+        if (entriesOp.isPresent() && CollectionUtils.isNotEmpty(entriesOp.get())) {
+            throw new CustomBusinessException(ErrorCode.FLOW_REFERENCE_BY_ENTRY);
+        }
     }
 }
