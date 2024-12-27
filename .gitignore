@@ -7,4 +7,5 @@
 /web/target/
 /.idea/
 /logs/
+/*/logs/
 /*.iml
